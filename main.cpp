@@ -19,13 +19,29 @@ namespace topit
     virtual p_t next(p_t) const = 0;
   };
 
-  struct Dot : IDraw
+  struct Dot:IDraw
   {
     Dot(int x, int y);
     explicit Dot(p_t dd);
     p_t begin() const override;
     p_t next(p_t) const override;
     p_t d;
+  };
+  struct LineH:IDraw
+  {
+    LineH(p_t pos,int width);
+    p_t begin() const override;
+    p_t next(p_t) const override;
+    p_t pos_;
+    int width_;
+  };
+  struct LineV:IDraw
+  {
+    LineV(p_t pos,int width);
+    p_t begin() const override;
+    p_t next(p_t) const override;
+    p_t pos_;
+    int width_;
   };
   // Домашнее задание:
   // - Добавить ещё 2-3 фигуры:
@@ -50,36 +66,30 @@ namespace topit
   // вывод двумперного массива на основе размеров, определяемых фреймом
   void flush(std::ostream& os, const char* cnv, f_t fr);
 
-  void extend(topit::p_t** pts, size_t s, p_t p)
-  {
-    size_t upd_s = s + 1;
-    p_t* res = new p_t[upd_s];
-    for (size_t i = 0; i < s; ++i) {
-      res[i] = (*pts)[i];
-    }
-
-    res[s] = p;
-    delete[] *pts;
-    *pts = res;
-  }
+  void extend(topit::p_t** pts, size_t s, p_t p);
   size_t rows(f_t fr);
   size_t cols(f_t fr);
 } // namespace topit
 int main()
 {
   using topit::Dot;
+  using topit::LineH;
+  using topit::LineV;
   using topit::f_t;
   using topit::IDraw;
   using topit::p_t;
   int err = 0;
-  IDraw* shps[3] = {};
+  const size_t size_arr=4;
+  IDraw* shps[size_arr] = {};
   p_t* pts = nullptr;
   size_t s = 0;
   try {
+
     shps[0] = new Dot(0, 0);
     shps[1] = new Dot(5, 7);
     shps[2] = new Dot(-5, -2);
-    for (size_t i = 0; i < 3; ++i) {
+    shps[3] = new LineV({2,0},10);
+    for (size_t i = 0; i < size_arr; ++i) {
       s += topit::points(*(shps[i]), &pts, s);
     }
     f_t fr = frame(pts, s);
@@ -95,10 +105,10 @@ int main()
   }
   delete[] pts;
   delete shps[0];
-  delete shps[1];
-  delete shps[2];
+
   return err;
 }
+
 
 size_t topit::points(const IDraw& d, p_t** pts, size_t s)
 {
@@ -163,6 +173,18 @@ void topit::flush(std::ostream& os, const char* cnv, topit::f_t fr)
     os << '\n';
   }
 }
+void topit::extend(topit::p_t** pts, size_t s, p_t p)
+{
+    size_t upd_s = s + 1;
+    p_t* res = new p_t[upd_s];
+    for (size_t i = 0; i < s; ++i) {
+      res[i] = (*pts)[i];
+    }
+
+    res[s] = p;
+    delete[] *pts;
+    *pts = res;
+  }
 
 topit::Dot::Dot(p_t dd) : IDraw(), d{dd}
 {}
@@ -181,6 +203,36 @@ topit::p_t topit::Dot::next(p_t prev) const
     throw std::logic_error("bad impl");
   }
   return d;
+}
+topit::LineH::LineH(p_t pos, int width):
+  pos_(pos),
+  width_(width)
+{}
+topit::p_t topit::LineH::begin() const
+{
+  return pos_;
+}
+topit::p_t topit::LineH::next(p_t prev) const
+{
+  if (prev.x==pos_.x+width_-1 && prev.y==pos_.y) {
+    return pos_;
+  }
+  return {prev.x+1,prev.y};
+}
+topit::LineV::LineV(p_t pos, int width):
+  pos_(pos),
+  width_(width)
+{}
+topit::p_t topit::LineV::begin() const
+{
+  return pos_;
+}
+topit::p_t topit::LineV::next(p_t prev) const
+{
+  if (prev.x==pos_.x && prev.y==pos_.y+width_-1) {
+    return pos_;
+  }
+  return {prev.x,prev.y+1};
 }
 
 bool topit::operator==(p_t a, p_t b)
