@@ -43,6 +43,14 @@ namespace topit
     p_t pos_;
     int width_;
   };
+  struct Rectangle:IDraw
+  {
+    Rectangle(p_t pos,int width);
+    p_t begin() const override;
+    p_t next(p_t) const override;
+    p_t pos_;
+    int width_;
+  };
   // Домашнее задание:
   // - Добавить ещё 2-3 фигуры:
   //   - Вертикальный отрезок
@@ -75,6 +83,7 @@ int main()
   using topit::Dot;
   using topit::LineH;
   using topit::LineV;
+  using topit::Rectangle;
   using topit::f_t;
   using topit::IDraw;
   using topit::p_t;
@@ -88,7 +97,7 @@ int main()
     shps[0] = new Dot(0, 0);
     shps[1] = new Dot(5, 7);
     shps[2] = new Dot(-5, -2);
-    shps[3] = new LineV({2,0},10);
+    shps[3] = new Rectangle({0,0},3);
     for (size_t i = 0; i < size_arr; ++i) {
       s += topit::points(*(shps[i]), &pts, s);
     }
@@ -235,6 +244,26 @@ topit::p_t topit::LineV::next(p_t prev) const
   return {prev.x,prev.y+1};
 }
 
+topit::Rectangle::Rectangle(p_t pos,int width):
+  pos_(pos),
+  width_(width)
+{}
+topit::p_t topit::Rectangle::begin() const {
+  return pos_;
+}
+topit::p_t topit::Rectangle::next(p_t prev) const {
+
+  if (prev.x==pos_.x && prev.y>pos_.y) {
+    return {prev.x,prev.y-1};
+  } else if (prev.x==pos_.x+width_-1 && prev.y<pos_.y+width_-1) {
+    return {prev.x,prev.y+1};
+  } else if (prev.y==pos_.y+width_-1 && prev.x>pos_.x) {
+    return {prev.x-1,prev.y};
+  } else if (prev.y==pos_.y && prev.x<pos_.x+width_-1) {
+    return {prev.x+1,prev.y};
+  }
+  return pos_;
+}
 bool topit::operator==(p_t a, p_t b)
 {
   return a.x == b.x && a.y == b.y;
