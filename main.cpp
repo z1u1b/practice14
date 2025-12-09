@@ -43,6 +43,14 @@ namespace topit
     p_t pos_;
     int width_;
   };
+  struct Diagonale:IDraw
+  {
+    Diagonale(p_t pos,int width);
+    p_t begin() const override;
+    p_t next(p_t) const override;
+    p_t pos_;
+    int width_;
+  };
   struct Rectangle:IDraw
   {
     Rectangle(p_t pos,int width);
@@ -83,12 +91,13 @@ int main()
   using topit::Dot;
   using topit::LineH;
   using topit::LineV;
+  using topit::Diagonale;
   using topit::Rectangle;
   using topit::f_t;
   using topit::IDraw;
   using topit::p_t;
   int err = 0;
-  const size_t size_arr=4;
+  const size_t size_arr=5;
   IDraw* shps[size_arr] = {};
   p_t* pts = nullptr;
   size_t s = 0;
@@ -98,6 +107,7 @@ int main()
     shps[1] = new Dot(5, 7);
     shps[2] = new Dot(-5, -2);
     shps[3] = new Rectangle({0,0},3);
+    shps[4] = new Diagonale({2,2},3);
     for (size_t i = 0; i < size_arr; ++i) {
       s += topit::points(*(shps[i]), &pts, s);
     }
@@ -243,7 +253,21 @@ topit::p_t topit::LineV::next(p_t prev) const
   }
   return {prev.x,prev.y+1};
 }
-
+topit::Diagonale::Diagonale(p_t pos, int width):
+  pos_(pos),
+  width_(width)
+{}
+topit::p_t topit::Diagonale::begin() const
+{
+  return pos_;
+}
+topit::p_t topit::Diagonale::next(p_t prev) const
+{
+  if (prev.x==pos_.x+width_-1 && prev.y==pos_.y+width_-1) {
+    return pos_;
+  }
+  return {prev.x+1,prev.y+1};
+}
 topit::Rectangle::Rectangle(p_t pos,int width):
   pos_(pos),
   width_(width)
