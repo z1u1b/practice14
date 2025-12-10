@@ -51,13 +51,22 @@ namespace topit
     p_t pos_;
     int width_;
   };
-  struct Rectangle:IDraw
+  struct Square:IDraw
   {
-    Rectangle(p_t pos,int width);
+    Square(p_t pos,int width);
     p_t begin() const override;
     p_t next(p_t) const override;
     p_t pos_;
     int width_;
+  };
+  struct Rectangle:IDraw
+  {
+    Rectangle(p_t pos,int width,int height);
+    p_t begin() const override;
+    p_t next(p_t) const override;
+    p_t pos_;
+    int width_;
+    int height_;
   };
   // Домашнее задание:
   // - Добавить ещё 2-3 фигуры:
@@ -92,6 +101,7 @@ int main()
   using topit::LineH;
   using topit::LineV;
   using topit::Diagonale;
+  using topit::Square;
   using topit::Rectangle;
   using topit::f_t;
   using topit::IDraw;
@@ -106,7 +116,8 @@ int main()
     shps[0] = new Dot(0, 0);
     shps[1] = new Dot(5, 7);
     shps[2] = new Dot(-5, -2);
-    shps[3] = new Rectangle({0,0},3);
+    // shps[3] = new Square({0,0},3);
+    shps[3] = new Rectangle({-3,5},4,2);
     shps[4] = new Diagonale({2,2},3);
     for (size_t i = 0; i < size_arr; ++i) {
       s += topit::points(*(shps[i]), &pts, s);
@@ -268,9 +279,30 @@ topit::p_t topit::Diagonale::next(p_t prev) const
   }
   return {prev.x+1,prev.y+1};
 }
-topit::Rectangle::Rectangle(p_t pos,int width):
+topit::Square::Square(p_t pos,int width):
   pos_(pos),
   width_(width)
+{}
+topit::p_t topit::Square::begin() const {
+  return pos_;
+}
+topit::p_t topit::Square::next(p_t prev) const {
+
+  if (prev.x==pos_.x && prev.y>pos_.y) {
+    return {prev.x,prev.y-1};
+  } else if (prev.x==pos_.x+width_-1 && prev.y<pos_.y+width_-1) {
+    return {prev.x,prev.y+1};
+  } else if (prev.y==pos_.y+width_-1 && prev.x>pos_.x) {
+    return {prev.x-1,prev.y};
+  } else if (prev.y==pos_.y && prev.x<pos_.x+width_-1) {
+    return {prev.x+1,prev.y};
+  }
+  return pos_;
+}
+topit::Rectangle::Rectangle(p_t pos,int width,int height):
+  pos_(pos),
+  width_(width),
+  height_(height)
 {}
 topit::p_t topit::Rectangle::begin() const {
   return pos_;
@@ -279,9 +311,9 @@ topit::p_t topit::Rectangle::next(p_t prev) const {
 
   if (prev.x==pos_.x && prev.y>pos_.y) {
     return {prev.x,prev.y-1};
-  } else if (prev.x==pos_.x+width_-1 && prev.y<pos_.y+width_-1) {
+  } else if (prev.x==pos_.x+width_-1 && prev.y<pos_.y+height_-1) {
     return {prev.x,prev.y+1};
-  } else if (prev.y==pos_.y+width_-1 && prev.x>pos_.x) {
+  } else if (prev.y==pos_.y+height_-1 && prev.x>pos_.x) {
     return {prev.x-1,prev.y};
   } else if (prev.y==pos_.y && prev.x<pos_.x+width_-1) {
     return {prev.x+1,prev.y};
